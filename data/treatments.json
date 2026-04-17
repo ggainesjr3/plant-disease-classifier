@@ -1,0 +1,38 @@
+{
+  "Apple Scab": {
+    "action": "Fungicide Application",
+    "steps": ["Remove fallen leaves", "Apply copper-based fungicide", "Prune for air circulation"]
+  },
+  "Apple Black rot": {
+    "action": "Pruning & Sanitation",
+    "steps": ["Prune out dead wood", "Remove mummified fruit", "Apply fungicide during bloom"]
+  },
+  "Corn maize Northern Leaf Blight": {
+    "action": "Crop Management",
+    "steps": ["Rotate crops", "Apply foliar fungicides", "Manage irrigation"]
+  },
+  "Corn maize Common rust": {
+    "action": "Monitoring",
+    "steps": ["Plant resistant varieties", "Apply fungicide if infection is heavy"]
+  },
+  "Grape Black rot": {
+    "action": "Vineyard Sanitation",
+    "steps": ["Remove old fruit clusters", "Apply fungicide early in the season"]
+  },
+  "Potato Early blight": {
+    "action": "Fungicide Schedule",
+    "steps": ["Maintain plant vigor", "Apply fungicides regularly", "Avoid overhead irrigation"]
+  },
+  "Tomato Early blight": {
+    "action": "Sanitation & Spraying",
+    "steps": ["Trim lower leaves", "Apply organic Neem oil", "Stake plants"]
+  },
+  "Tomato Late blight": {
+    "action": "Immediate Removal",
+    "steps": ["Destroy infected plants", "Apply preventative fungicide to neighbors", "Improve spacing"]
+  },
+  "Healthy": {
+    "action": "Maintenance",
+    "steps": ["Continue watering", "Monitor weekly", "Ensure nutrients"]
+  }
+}

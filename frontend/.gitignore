@@ -1,0 +1,17 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Node/React
+node_modules/
+build/
+.env
+
+# Model Files (if they are very large, we'll use Git LFS later)
+# *.keras
+
+# System
+.DS_Store
