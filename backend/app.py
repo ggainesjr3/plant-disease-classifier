@@ -1,88 +1,59 @@
 import os
-import subprocess
-import json
+import numpy as np
+import tensorflow as tf
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from werkzeug.utils import secure_filename
+from PIL import Image
+import io
 
 app = Flask(__name__)
 CORS(app)
 
-# --- CONFIGURATION ---
-UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-PROJECT_ROOT = '/home/gary/plant-disease-classifier'
-PREDICT_SCRIPT = os.path.join(PROJECT_ROOT, 'scripts/predict.py')
-PYTHON_EXEC = 'python3' 
+# Load the model
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'plant_disease_model.h5')
+model = tf.keras.models.load_model(MODEL_PATH)
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+CLASS_NAMES = [
+    'Pepper__bell___Bacterial_spot', 'Pepper__bell___healthy', 
+    'Potato___Early_blight', 'Potato___Late_blight', 'Potato___healthy', 
+    'Tomato_Bacterial_spot', 'Tomato_Early_blight', 'Tomato_Late_blight', 
+    'Tomato_Leaf_Mold', 'Tomato_Septoria_leaf_spot', 
+    'Tomato_Spider_mites_Two_spotted_spider_mite', 'Tomato__Target_Spot', 
+    'Tomato__Tomato_YellowLeaf__Curl_Virus', 'Tomato__Tomato_mosaic_virus', 
+    'Tomato_healthy'
+]
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if 'image' not in request.files:
-        return jsonify({"error": "No image uploaded"}), 400
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file'}), 400
     
-    file = request.files['image']
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-
-        try:
-            # 1. Run the predict.py script with a 30-second timeout safeguard
-            result = subprocess.run(
-                [PYTHON_EXEC, PREDICT_SCRIPT, filepath],
-                capture_output=True,
-                text=True,
-                check=True,
-                timeout=30  # Prevents zombie processes if the model hangs
-            )
-            
-            process_output = result.stdout
-            
-            # 2. Find the JSON_OUTPUT line
-            for line in process_output.split('\n'):
-                if line.startswith("JSON_OUTPUT: "):
-                    json_str = line.replace("JSON_OUTPUT: ", "")
-                    prediction_data = json.loads(json_str)
-                    
-                    # Clean up the uploaded file after processing
-                    if os.path.exists(filepath):
-                        os.remove(filepath)
-                    
-                    return jsonify(prediction_data)
-
-            return jsonify({"error": "Could not parse AI output", "raw": process_output}), 500
-
-        except subprocess.TimeoutExpired:
-            # Clean up the file if processing timed out
-            if os.path.exists(filepath):
-                os.remove(filepath)
-            return jsonify({
-                "error": "Processing timed out", 
-                "details": "The AI model took too long to respond. Try a smaller image."
-            }), 504
-
-        except subprocess.CalledProcessError as e:
-            if os.path.exists(filepath):
-                os.remove(filepath)
-            return jsonify({"error": "Prediction script failed", "details": str(e.stderr)}), 500
-            
-        except Exception as e:
-            if os.path.exists(filepath):
-                os.remove(filepath)
-            return jsonify({"error": str(e)}), 500
-
-    return jsonify({"error": "Invalid file type"}), 400
+    file = request.files['file']
+    img = Image.open(io.BytesIO(file.read())).convert('RGB')
+    img = img.resize((224, 224))
+    
+    img_array = np.array(img) / 255.0
+    img_array = np.expand_dims(img_array, axis=0)
+    
+    predictions = model.predict(img_array)
+    predicted_index = np.argmax(predictions[0])
+    confidence = float(np.max(predictions[0]))
+    
+    # --- THE FIX: CONFIDENCE GUARD ---
+    # If the model is less than 70% sure, we call it "Unknown"
+    # This stops it from guessing when you show it an apple or paper.
+    if confidence < 0.70:
+        return jsonify({
+            'class': 'Unknown Object',
+            'confidence': confidence,
+            'message': 'Please provide a clear photo of a Pepper, Potato, or Tomato leaf.'
+        })
+    
+    return jsonify({
+        'class': CLASS_NAMES[predicted_index],
+        'confidence': confidence
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

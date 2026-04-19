@@ -1,1 +1,44 @@
+.app-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  color: #333;
+}
 
+.upload-section {
+  border: 2px dashed #2e7d32;
+  padding: 40px;
+  margin: 20px 0;
+  border-radius: 12px;
+  background-color: #f1f8e9;
+  transition: 0.3s;
+}
+
+button {
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+button:hover {
+  background-color: #1b5e20;
+}
+
+.result-card {
+  margin-top: 30px;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  border-left: 8px solid #2e7d32;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}

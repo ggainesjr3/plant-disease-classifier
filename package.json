@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "install-all": "npm install && npm install --prefix frontend && npm install --prefix backend",
-    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue,green\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\""
+    "backend": ". venv/bin/activate && python3 -u backend/app.py",
+    "frontend": "cd frontend && npm run dev",
+    "dev:all": "concurrently --kill-others \"npm run backend\" \"npm run frontend\""
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
